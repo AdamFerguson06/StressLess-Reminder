@@ -1,15 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
   const breakTimeInput = document.getElementById('breakTimeInput');
   const setBreakTimeButton = document.getElementById('setBreakTime');
-  const countdownElement = document.getElementById('countdown');
 
   // Load the stored break time when the popup is opened
-  chrome.storage.sync.get(['breakTimeInMinutes', 'endTime'], function (result) {
+  chrome.storage.sync.get(['breakTimeInMinutes'], function (result) {
     if (result.breakTimeInMinutes) {
       breakTimeInput.value = result.breakTimeInMinutes;
-    }
-    if (result.endTime) {
-      startCountdown(result.endTime);
     }
   });
 
