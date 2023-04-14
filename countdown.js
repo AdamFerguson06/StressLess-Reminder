@@ -1,21 +1,31 @@
-// Get the break time from the query string
-var searchParams = new URLSearchParams(window.location.search);
-var breakTime = parseInt(searchParams.get('breakTime'));
+// Get the break time from the URL parameters
+var urlParams = new URLSearchParams(window.location.search);
+var breakTime = urlParams.get('breakTime');
+var countdownSeconds = breakTime * 60;
 
 // Get the countdown element and set its initial value
 var countdownElement = document.getElementById('countdown');
-countdownElement.innerHTML = breakTime + ':00';
+countdownElement.innerHTML = formatCountdown(countdownSeconds);
 
 // Update the countdown every second
-var countdownSeconds = breakTime * 60;
 var countdownInterval = setInterval(function() {
-  var minutes = Math.floor(countdownSeconds / 60);
-  var seconds = countdownSeconds % 60;
-  var countdownText = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
-  countdownElement.innerHTML = countdownText;
   countdownSeconds--;
-  if (countdownSeconds < 0) {
+  countdownElement.innerHTML = formatCountdown(countdownSeconds);
+  if (countdownSeconds <= 0) {
     clearInterval(countdownInterval);
-    countdownElement.innerHTML = '0:00';
+    if (!alertShown) {
+      alertShown = true;
+      alert('Time\'s up!');
+    }
   }
 }, 1000);
+
+// Format the countdown time as MM:SS
+function formatCountdown(seconds) {
+  var minutes = Math.floor(seconds / 60);
+  var secondsLeft = seconds % 60;
+  return minutes + ':' + (secondsLeft < 10 ? '0' : '') + secondsLeft;
+}
+
+// Set the flag to track if the alert has been shown
+var alertShown = false;
