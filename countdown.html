@@ -6,15 +6,16 @@
 </head>
 <body>
   <h1>StressLess Reminder</h1>
-  <p>Next break in:</p>
+  <p id="break-time"></p>
   <div id="countdown"></div>
   <script src="countdown.js"></script>
   <script>
     // Get the breakTime parameter from the URL query string
     var breakTime = new URLSearchParams(window.location.search).get('breakTime');
 
-    // Update the countdown element with the breakTime value
-    document.getElementById('countdown').innerHTML = breakTime + ' minutes';
+    // Update the break time element with the breakTime value
+    document.getElementById('break-time').innerHTML = 'Next break in ' + breakTime + ' minutes';
+
   </script>
 </body>
 </html>
