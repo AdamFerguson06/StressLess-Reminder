@@ -1,29 +1,38 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const countdownElement = document.getElementById('countdown');
+(function() {
+    'use strict';
   
-    function updateCountdown() {
-      chrome.storage.sync.get(['endTime'], function (result) {
-        if (result.endTime) {
-          const now = new Date().getTime();
-          const distance = result.endTime - now;
+    // Get the break time from the URL
+    var searchParams = new URLSearchParams(window.location.search);
+    var breakTime = parseInt(searchParams.get('breakTime'), 10);
   
-          if (distance <= 0) {
-            clearInterval(window.stressLessCountdownInterval);
-            countdownElement.innerText = 'Time for a break!';
-            alert('Time for a break!');
-            chrome.storage.sync.remove(['endTime'], function() {
-              window.close();
-            });
-          } else {
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            countdownElement.innerText = minutes + 'm ' + seconds + 's';
-          }
-        }
-      });
-    }
+    // Get the countdown element and set its initial value
+    var countdownElement = document.getElementById('countdown');
+    countdownElement.innerHTML = breakTime + ':00';
   
-    window.stressLessCountdownInterval = setInterval(updateCountdown, 1000);
-    updateCountdown();
-  });
+    // Create and display the popup window
+    var popupWindow = window.open('', 'popup', 'width=200,height=100');
+    popupWindow.document.write('<p id="popup-countdown"></p>');
+    popupWindow.document.close();
+  
+    // Update the countdown in the popup window every second
+    var popupCountdownElement = popupWindow.document.getElementById('popup-countdown');
+    var countdownSeconds = breakTime * 60;
+    var countdownInterval = setInterval(function() {
+      var minutes = Math.floor(countdownSeconds / 60);
+      var seconds = countdownSeconds % 60;
+      var countdownText = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+      countdownElement.innerHTML = countdownText;
+      popupCountdownElement.innerHTML = countdownText;
+      countdownSeconds--;
+      if (countdownSeconds < 0) {
+        clearInterval(countdownInterval);
+        popupWindow.alert('Time\'s up!');
+      }
+    }, 1000);
+  
+    // Close the popup window when the countdown is done
+    popupWindow.onunload = function() {
+      clearInterval(countdownInterval);
+    };
+  })();
   
