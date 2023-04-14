@@ -13,39 +13,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const breakTimeInMinutes = parseInt(breakTimeInput.value, 10);
 
     if (breakTimeInMinutes && breakTimeInMinutes > 0) {
-      // Save the break time to the Chrome storage
-      chrome.storage.sync.set({ 'breakTimeInMinutes': breakTimeInMinutes }, function () {
-        console.log('Break time set to', breakTimeInMinutes, 'minutes');
+      // Store the break time in minutes
+      chrome.storage.sync.set({ breakTimeInMinutes: breakTimeInMinutes }, function () {
+        console.log('Break time set to ' + breakTimeInMinutes + ' minutes.');
       });
 
-      // Calculate the end time and save it
+      // Calculate the end time for the break
       const endTime = new Date().getTime() + breakTimeInMinutes * 60 * 1000;
-      chrome.storage.sync.set({ 'endTime': endTime });
+      chrome.storage.sync.set({ endTime: endTime }, function () {
+        console.log('Break end time set to ' + new Date(endTime));
+      });
 
-      // Set the break timer
-      startCountdown(endTime);
-    } else {
-      console.log('Invalid break time');
+      // Open the countdown.html popup
+      chrome.browserAction.setPopup({ popup: 'countdown.html' });
+      window.close();
     }
   });
 });
-
-function startCountdown(endTime) {
-  function updateCountdown() {
-    const now = new Date().getTime();
-    const distance = endTime - now;
-
-    if (distance <= 0) {
-      clearInterval(window.stressLessCountdownInterval);
-      countdownElement.innerText = 'Time for a break!';
-    } else {
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      countdownElement.innerText = minutes + 'm ' + seconds + 's';
-    }
-  }
-
-  clearInterval(window.stressLessCountdownInterval);
-  window.stressLessCountdownInterval = setInterval(updateCountdown, 1000);
-  updateCountdown();
-}
