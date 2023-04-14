@@ -1,11 +1,15 @@
 document.addEventListener('DOMContentLoaded', function () {
   const breakTimeInput = document.getElementById('breakTimeInput');
   const setBreakTimeButton = document.getElementById('setBreakTime');
+  const countdownElement = document.getElementById('countdown');
 
   // Load the stored break time when the popup is opened
-  chrome.storage.sync.get(['breakTimeInMinutes'], function (result) {
+  chrome.storage.sync.get(['breakTimeInMinutes', 'endTime'], function (result) {
     if (result.breakTimeInMinutes) {
       breakTimeInput.value = result.breakTimeInMinutes;
+    }
+    if (result.endTime) {
+      startCountdown(result.endTime);
     }
   });
 
@@ -18,20 +22,34 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Break time set to', breakTimeInMinutes, 'minutes');
       });
 
+      // Calculate the end time and save it
+      const endTime = new Date().getTime() + breakTimeInMinutes * 60 * 1000;
+      chrome.storage.sync.set({ 'endTime': endTime });
+
       // Set the break timer
-      setBreakTimer(breakTimeInMinutes);
+      startCountdown(endTime);
     } else {
       console.log('Invalid break time');
     }
   });
 });
 
-function setBreakTimer(breakTimeInMinutes) {
-  // Clear any existing timer
-  clearTimeout(window.stressLessTimer);
+function startCountdown(endTime) {
+  function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = endTime - now;
 
-  // Set a new timer
-  window.stressLessTimer = setTimeout(function () {
-    alert('Time for a break!');
-  }, breakTimeInMinutes * 60 * 1000);
+    if (distance <= 0) {
+      clearInterval(window.stressLessCountdownInterval);
+      countdownElement.innerText = 'Time for a break!';
+    } else {
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      countdownElement.innerText = minutes + 'm ' + seconds + 's';
+    }
+  }
+
+  clearInterval(window.stressLessCountdownInterval);
+  window.stressLessCountdownInterval = setInterval(updateCountdown, 1000);
+  updateCountdown();
 }
