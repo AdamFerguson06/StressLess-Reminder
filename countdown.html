@@ -7,7 +7,14 @@
 <body>
   <h1>StressLess Reminder</h1>
   <p>Next break in:</p>
-  <div id="countdown">Loading...</div>
+  <div id="countdown"></div>
   <script src="countdown.js"></script>
+  <script>
+    // Get the breakTime parameter from the URL query string
+    var breakTime = new URLSearchParams(window.location.search).get('breakTime');
+
+    // Update the countdown element with the breakTime value
+    document.getElementById('countdown').innerHTML = breakTime + ' minutes';
+  </script>
 </body>
 </html>
