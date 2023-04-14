@@ -1,19 +1,37 @@
-const startBtn = document.getElementById("start");
-const stopBtn = document.getElementById("stop");
-const timeEl = document.getElementById("time");
+document.addEventListener('DOMContentLoaded', function () {
+  const breakTimeInput = document.getElementById('breakTimeInput');
+  const setBreakTimeButton = document.getElementById('setBreakTime');
 
-startBtn.addEventListener("click", () => {
-  chrome.runtime.sendMessage({ action: "start" });
+  // Load the stored break time when the popup is opened
+  chrome.storage.sync.get(['breakTimeInMinutes'], function (result) {
+    if (result.breakTimeInMinutes) {
+      breakTimeInput.value = result.breakTimeInMinutes;
+    }
+  });
+
+  setBreakTimeButton.addEventListener('click', function () {
+    const breakTimeInMinutes = parseInt(breakTimeInput.value, 10);
+
+    if (breakTimeInMinutes && breakTimeInMinutes > 0) {
+      // Save the break time to the Chrome storage
+      chrome.storage.sync.set({ 'breakTimeInMinutes': breakTimeInMinutes }, function () {
+        console.log('Break time set to', breakTimeInMinutes, 'minutes');
+      });
+
+      // Set the break timer
+      setBreakTimer(breakTimeInMinutes);
+    } else {
+      console.log('Invalid break time');
+    }
+  });
 });
 
-stopBtn.addEventListener("click", () => {
-  chrome.runtime.sendMessage({ action: "stop" });
-});
+function setBreakTimer(breakTimeInMinutes) {
+  // Clear any existing timer
+  clearTimeout(window.stressLessTimer);
 
-chrome.runtime.sendMessage({ action: "getTime" }, (response) => {
-  if (response.time) {
-    timeEl.textContent = response.time;
-  } else {
-    timeEl.textContent = "Not started";
-  }
-});
+  // Set a new timer
+  window.stressLessTimer = setTimeout(function () {
+    alert('Time for a break!');
+  }, breakTimeInMinutes * 60 * 1000);
+}
