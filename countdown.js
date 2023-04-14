@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function () {
             countdownElement.innerText = 'Time for a break!';
             alert('Time for a break!');
             chrome.storage.sync.remove(['endTime'], function() {
-              chrome.browserAction.setPopup({ popup: 'popup.html' });
               window.close();
             });
           } else {

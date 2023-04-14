@@ -24,9 +24,12 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Break end time set to ' + new Date(endTime));
       });
 
-      // Open the countdown.html popup
-      chrome.browserAction.setPopup({ popup: 'countdown.html' });
-      window.close();
+      // Open the countdown.html in a new window
+      const width = 300;
+      const height = 200;
+      const left = (screen.width / 2) - (width / 2);
+      const top = (screen.height / 2) - (height / 2);
+      window.open('countdown.html', 'countdown', `width=${width},height=${height},top=${top},left=${left}`);
     }
   });
 });
