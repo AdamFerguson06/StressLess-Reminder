@@ -1,35 +1,59 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const breakTimeInput = document.getElementById('breakTimeInput');
-  const setBreakTimeButton = document.getElementById('setBreakTime');
+var breakPopupWindow = null;
 
-  // Load the stored break time when the popup is opened
-  chrome.storage.sync.get(['breakTimeInMinutes'], function (result) {
-    if (result.breakTimeInMinutes) {
-      breakTimeInput.value = result.breakTimeInMinutes;
+function setBreakTime() {
+  var minutes = document.getElementById('breakTimeInput').value;
+  if (minutes) {
+    // Calculate the number of seconds until the next break
+    var secondsUntilBreak = minutes * 60;
+
+    // Create a new window with no content
+    var popupWindow = window.open('', 'breakWindow', 'width=200,height=100');
+
+    // Close the previous popup window, if it exists
+    if (breakPopupWindow) {
+      breakPopupWindow.close();
     }
-  });
 
-  setBreakTimeButton.addEventListener('click', function () {
-    const breakTimeInMinutes = parseInt(breakTimeInput.value, 10);
+    // Store a reference to the new popup window
+    breakPopupWindow = popupWindow;
 
-    if (breakTimeInMinutes && breakTimeInMinutes > 0) {
-      // Store the break time in minutes
-      chrome.storage.sync.set({ breakTimeInMinutes: breakTimeInMinutes }, function () {
-        console.log('Break time set to ' + breakTimeInMinutes + ' minutes.');
-      });
+    // Start the countdown
+    startCountdown(secondsUntilBreak, popupWindow);
+  }
+}
 
-      // Calculate the end time for the break
-      const endTime = new Date().getTime() + breakTimeInMinutes * 60 * 1000;
-      chrome.storage.sync.set({ endTime: endTime }, function () {
-        console.log('Break end time set to ' + new Date(endTime));
-      });
+function startCountdown(seconds, popupWindow) {
+  // Get the countdown element and set its initial value
+  var countdownElement = document.getElementById('countdown');
+  var popupCountdownElement = popupWindow.document.createElement('p');
+  popupWindow.document.body.appendChild(popupCountdownElement);
+  var countdownText = formatTime(seconds);
+  countdownElement.innerHTML = countdownText;
+  popupCountdownElement.innerHTML = countdownText;
 
-      // Open the countdown.html in a new window
-      const width = 300;
-      const height = 200;
-      const left = (screen.width / 2) - (width / 2);
-      const top = (screen.height / 2) - (height / 2);
-      window.open('countdown.html', 'countdown', `width=${width},height=${height},top=${top},left=${left}`);
+  // Update the countdown every second
+  var countdownInterval = setInterval(function() {
+    seconds--;
+    countdownText = formatTime(seconds);
+    countdownElement.innerHTML = countdownText;
+    popupCountdownElement.innerHTML = countdownText;
+    if (seconds <= 0) {
+      clearInterval(countdownInterval);
+      popupWindow.alert('Time\'s up!');
+      popupWindow.close();
+      breakPopupWindow = null;
     }
-  });
-});
+  }, 1000);
+
+  // Close the popup window when the countdown is done
+  popupWindow.onunload = function() {
+    clearInterval(countdownInterval);
+    breakPopupWindow = null;
+  };
+}
+
+function formatTime(seconds) {
+  var minutes = Math.floor(seconds / 60);
+  var seconds = seconds % 60;
+  return minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+}
