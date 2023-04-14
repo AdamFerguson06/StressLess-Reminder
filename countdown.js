@@ -10,10 +10,11 @@ document.addEventListener('DOMContentLoaded', function () {
           if (distance <= 0) {
             clearInterval(window.stressLessCountdownInterval);
             countdownElement.innerText = 'Time for a break!';
-            chrome.browserAction.setPopup({ popup: 'break-reminder.html' });
-            setTimeout(function () {
+            alert('Time for a break!');
+            chrome.storage.sync.remove(['endTime'], function() {
               chrome.browserAction.setPopup({ popup: 'popup.html' });
-            }, 3000);
+              window.close();
+            });
           } else {
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
