@@ -1,59 +1,42 @@
-var breakPopupWindow = null;
+// Get the set break time button and add a click event listener
+var setBreakTimeButton = document.getElementById('setBreakTime');
+setBreakTimeButton.addEventListener('click', function() {
+  // Get the break time from the input field
+  var breakTime = document.getElementById('breakTimeInput').value;
 
-function setBreakTime() {
-  var minutes = document.getElementById('breakTimeInput').value;
-  if (minutes) {
-    // Calculate the number of seconds until the next break
-    var secondsUntilBreak = minutes * 60;
+  // Create the URL for the countdown screen
+  var url = chrome.runtime.getURL('countdown.html') + '?breakTime=' + encodeURIComponent(breakTime);
 
-    // Create a new window with no content
-    var popupWindow = window.open('', 'breakWindow', 'width=200,height=100');
+  // Open the countdown screen in a new tab
+  chrome.tabs.create({ url: url });
+});
 
-    // Close the previous popup window, if it exists
-    if (breakPopupWindow) {
-      breakPopupWindow.close();
-    }
+// Get the countdown element and set its initial value
+var countdownElement = document.getElementById('countdown');
+countdownElement.innerHTML = '---';
 
-    // Store a reference to the new popup window
-    breakPopupWindow = popupWindow;
+// Create and display the popup window
+var popupWindow = window.open('', 'popup', 'width=200,height=100');
+popupWindow.document.write('<p id="popup-countdown"></p>');
+popupWindow.document.close();
 
-    // Start the countdown
-    startCountdown(secondsUntilBreak, popupWindow);
-  }
-}
-
-function startCountdown(seconds, popupWindow) {
-  // Get the countdown element and set its initial value
-  var countdownElement = document.getElementById('countdown');
-  var popupCountdownElement = popupWindow.document.createElement('p');
-  popupWindow.document.body.appendChild(popupCountdownElement);
-  var countdownText = formatTime(seconds);
+// Update the countdown in the popup window every second
+var popupCountdownElement = popupWindow.document.getElementById('popup-countdown');
+var countdownSeconds = 0;
+var countdownInterval = setInterval(function() {
+  var minutes = Math.floor(countdownSeconds / 60);
+  var seconds = countdownSeconds % 60;
+  var countdownText = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
   countdownElement.innerHTML = countdownText;
   popupCountdownElement.innerHTML = countdownText;
-
-  // Update the countdown every second
-  var countdownInterval = setInterval(function() {
-    seconds--;
-    countdownText = formatTime(seconds);
-    countdownElement.innerHTML = countdownText;
-    popupCountdownElement.innerHTML = countdownText;
-    if (seconds <= 0) {
-      clearInterval(countdownInterval);
-      popupWindow.alert('Time\'s up!');
-      popupWindow.close();
-      breakPopupWindow = null;
-    }
-  }, 1000);
-
-  // Close the popup window when the countdown is done
-  popupWindow.onunload = function() {
+  countdownSeconds--;
+  if (countdownSeconds < 0) {
     clearInterval(countdownInterval);
-    breakPopupWindow = null;
-  };
-}
+    popupWindow.alert('Time\'s up!');
+  }
+}, 1000);
 
-function formatTime(seconds) {
-  var minutes = Math.floor(seconds / 60);
-  var seconds = seconds % 60;
-  return minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
-}
+// Close the popup window when the countdown is done
+popupWindow.onunload = function() {
+  clearInterval(countdownInterval);
+};
