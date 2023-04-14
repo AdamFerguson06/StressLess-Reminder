@@ -2,20 +2,20 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="popup.css">
+  <title>Countdown</title>
+  <link rel="stylesheet" href="countdown.css">
 </head>
 <body>
   <h1>StressLess Reminder</h1>
-  <p id="break-time"></p>
+  <p>Next break in <span id="break-time"></span> minutes</p>
   <div id="countdown"></div>
   <script src="countdown.js"></script>
   <script>
-    // Get the breakTime parameter from the URL query string
-    var breakTime = new URLSearchParams(window.location.search).get('breakTime');
+    // Get the break time from the query string
+    var breakTime = parseInt(getParameterByName('breakTime'));
 
-    // Update the break time element with the breakTime value
-    document.getElementById('break-time').innerHTML = 'Next break in ' + breakTime + ' minutes';
-
+    // Set the text content of the "break-time" element
+    document.getElementById('break-time').textContent = breakTime;
   </script>
 </body>
 </html>
